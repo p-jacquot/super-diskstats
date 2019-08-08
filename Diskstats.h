@@ -34,11 +34,20 @@ class Diskstats{
 
 	public:
 		// --- Constructors / Destructors ---
-		Diskstats(const std::string &file = "/proc/diskstats");
+		Diskstats(const std::string &file = "/proc/diskstats",
+				const bool read = true);
+
 		~Diskstats();
 		
 		// --- Methods ---
+		void readFile();
 		void display(std::ostream& out) const;
+		void substract(	const Diskstats &latest,
+				const Diskstats & earliest);
+
+		void add( const Diskstats &a, const Diskstats &b);
+		
+		const std::string& getDiskstatsFile() const;
 
 	private:
 		std::string diskstatsFile;
@@ -46,13 +55,17 @@ class Diskstats{
 		
 		// --- private Methods ---
 
-		void readFile();
 		void readLine(const std::string &line);
 		void writeDeviceInfo(	std::ostream &out,
 					const std::string &device, 
 					const long * const& stats) 
 					const;
 };
+
+// --- Operators overriden --
+
+Diskstats operator-(const Diskstats &latest, const Diskstats &earliest);
+Diskstats operator+(const Diskstats &a, const Diskstats &b);
 
 std::ostream& operator<<(std::ostream &out, const Diskstats &diskstats);
 #endif

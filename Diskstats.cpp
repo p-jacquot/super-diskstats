@@ -6,9 +6,11 @@
 using namespace std;
 // ----- Constructor / Destructor -----
 
-Diskstats::Diskstats(const string &file) : diskstatsFile(file), mapStats()
+Diskstats::Diskstats(const string &file, const bool read) 
+	: diskstatsFile(file), mapStats()
 {
-	readFile();
+	if(read)
+		readFile();
 }
 
 Diskstats::~Diskstats()
@@ -21,18 +23,6 @@ Diskstats::~Diskstats()
 }
 
 // --- public methods ---
-
-void Diskstats::display(ostream& out) const
-{
-	unordered_map<string, long *>::const_iterator it;
-	for(it = mapStats.cbegin(); it != mapStats.cend(); ++it)
-	{
-		writeDeviceInfo(out, it->first, it->second);
-		out << endl << endl;
-	}	
-}
-
-// --- private methods ---
 
 void Diskstats::readFile()
 {
@@ -50,6 +40,77 @@ void Diskstats::readFile()
 	}
 	file.close();
 }
+
+void Diskstats::display(ostream& out) const
+{
+	unordered_map<string, long *>::const_iterator it;
+	for(it = mapStats.cbegin(); it != mapStats.cend(); ++it)
+	{
+		writeDeviceInfo(out, it->first, it->second);
+		out << endl << endl;
+	}	
+}
+
+void Diskstats::substract(	const Diskstats &latest, 
+				const Diskstats &earliest)
+{
+	unordered_map<string, long *>::const_iterator it_last;
+	unordered_map<string, long *>::const_iterator it_early;
+
+	unordered_map<string, long *> latest_map = latest.mapStats;
+	unordered_map<string, long *> early_map = earliest.mapStats;
+	
+	for(	it_last = latest_map.cbegin(); 
+		it_last != latest_map.cend(); 
+		++it_last)
+	{
+		it_early = early_map.find(it_last->first);
+		long * values = new long[13];
+
+		long * last_values = it_last->second;
+		long * early_values = it_early->second;
+		
+		for(int i = 0; i < 13; ++i)
+		{
+			values[i] = last_values[i] - early_values[i];
+		}
+
+		mapStats.insert(make_pair(it_last->first, values));
+	}
+}
+
+void Diskstats::add(const Diskstats &a, const Diskstats &b)
+{
+	unordered_map<string, long *>::const_iterator it_a;
+	unordered_map<string, long *>::const_iterator it_b;
+
+	unordered_map<string, long *> a_map = a.mapStats;
+	unordered_map<string, long *> b_map = b.mapStats;
+	
+	for(	it_a = a_map.cbegin(); 
+		it_a != a_map.cend(); 
+		++it_a)
+	{
+		it_b = b_map.find(it_a->first);
+		long * values = new long[13];
+
+		long * a_values = it_a->second;
+		long * b_values = it_b->second;
+		
+		for(int i = 0; i < 13; ++i)
+		{
+			values[i] = a_values[i] + b_values[i];
+		}
+
+		mapStats.insert(make_pair(it_a->first, values));
+	}
+}
+
+const string& Diskstats::getDiskstatsFile() const
+{
+	return diskstatsFile;
+}
+// --- private methods ---
 
 void Diskstats::readLine(const string &line)
 {
@@ -122,6 +183,20 @@ const
 		
 }
 // --- operators overriden ---
+
+Diskstats operator-(const Diskstats &latest, const Diskstats &earliest)
+{
+	Diskstats d(latest.getDiskstatsFile(), false);
+	d.substract(latest, earliest);
+	return d;
+}
+
+Diskstats operator+(const Diskstats &a, const Diskstats &b)
+{
+	Diskstats d(a.getDiskstatsFile(), false);
+	d.add(a, b);
+	return d;
+} 
 
 ostream& operator<<(ostream &out, const Diskstats & diskstats)
 {
