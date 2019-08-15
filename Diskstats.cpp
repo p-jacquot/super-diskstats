@@ -107,32 +107,6 @@ void Diskstats::add(const Diskstats &a, const Diskstats &b)
 	}
 }
 
-int Diskstats::getValueIndex(const char formatCode) const
-//returned value index between 0 & 12 : numeric value of diskstats
-//	//	 index == 13 : device name
-//	//	 index = -1 : unknown code.
-{
-	static const char codes[] = {
-		'M', 'm', 'R', 'r', 's', 't',
-		'W', 'w', 'S', 'T', 'i', 'I', 'q'
-	};
-	static const char deviceCode = 'd';
-	
-	int index = 0;
-	while(index < 13 && codes[index] != formatCode)
-	{
-		++index;
-	}
-	
-	if(index >= 13 && formatCode != deviceCode)
-	{
-		index = -1;
-	}
-
-	return index;
-}
-
-
 string Diskstats::format(const string &toFormat) const
 {
 	string formatted;
@@ -240,6 +214,32 @@ const
 	}
 		
 }
+
+int Diskstats::getValueIndex(const char formatCode) const
+//returned value index between 0 & 12 : numeric value of diskstats
+//	//	 index == 13 : device name
+//	//	 index = -1 : unknown code.
+{
+	static const char codes[] = {
+		'M', 'm', 'R', 'r', 's', 't',
+		'W', 'w', 'S', 'T', 'i', 'I', 'q'
+	};
+	static const char deviceCode = 'd';
+	
+	int index = 0;
+	while(index < 13 && codes[index] != formatCode)
+	{
+		++index;
+	}
+	
+	if(index >= 13 && formatCode != deviceCode)
+	{
+		index = -1;
+	}
+
+	return index;
+}
+
 
 string Diskstats::formatDeviceInfo(const string &toFormat,
 			const vector<int> &valueIndex,
