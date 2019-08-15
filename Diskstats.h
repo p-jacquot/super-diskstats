@@ -5,6 +5,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 
 static struct s_stats{
@@ -58,11 +59,20 @@ class Diskstats{
 		// --- private Methods ---
 
 		void readLine(const std::string &line);
+		
 		void writeDeviceInfo(	std::ostream &out,
 					const std::string &device, 
 					const long * const& stats) 
 					const;
+		
 		int getValueIndex(const char formatCode) const;
+		
+		std::string formatDeviceInfo(
+				const std::string &toFormat,
+				const std::vector<int> &valueIndex,
+				std::unordered_map<std::string, long*>
+					::const_iterator it
+				) const;
 };
 
 // --- Operators overriden --

@@ -132,6 +132,7 @@ int Diskstats::getValueIndex(const char formatCode) const
 	return index;
 }
 
+
 string Diskstats::format(const string &toFormat) const
 {
 	string formatted;
@@ -148,47 +149,15 @@ string Diskstats::format(const string &toFormat) const
 		}
 	}
 	
-	//TODO: refactor this part
-	
 	unordered_map<string, long *>::const_iterator it;
 	for(it = mapStats.cbegin(); it != mapStats.cend(); ++it)
 	{
-		string device = it->first;
-		long * values = it->second;
-		int j = 0; // position in toFormat
-		int i = 0; // position in valueIndex
-
-		while(j < toFormat.size())
-		{
-			if(toFormat[j] == '%' && j < toFormat.size() - 1)
-			{
-				int code = getValueIndex(toFormat[++j]);
-				if(code >= 0)
-				{
-					if(code < 13)
-					{
-						int val = values[valueIndex[i++]];
-						formatted += to_string(val);
-					}
-					else
-					{
-						formatted += device;
-					}
-				}
-				else
-				{
-					formatted += '%';
-					formatted += toFormat[j];
-				}
-			}
-			else
-			{
-				formatted += toFormat[j];
-			}
-
-			++j;
-		}
-		formatted += '\n';
+			formatted += formatDeviceInfo(
+					toFormat,
+					valueIndex,
+					it);
+								
+			formatted += '\n';
 	}
 	return formatted;
 }
@@ -270,6 +239,52 @@ const
 		cout << statLabel[i] << stats[i] << endl;
 	}
 		
+}
+
+string Diskstats::formatDeviceInfo(const string &toFormat,
+			const vector<int> &valueIndex,
+			unordered_map<string, long *>::const_iterator it)
+const
+{
+	string formatted;
+	string device = it->first;
+	long * values = it->second;
+	int j = 0; // position in toFormat
+	int i = 0; // position in valueIndex
+
+	//TODO: try to have a nicer while loop.
+	while(j < toFormat.size())
+	{
+		if(toFormat[j] == '%' && j < toFormat.size() - 1)
+		{
+			int code = getValueIndex(toFormat[++j]);
+			if(code >= 0)
+			{
+				if(code < 13)
+				{
+					int val = values[valueIndex[i++]];
+					formatted += to_string(val);
+				}
+				else
+				{
+					formatted += device;
+				}
+			}
+			else
+			{
+				formatted += '%';
+				formatted += toFormat[j];
+			}
+		}
+		else
+		{
+			formatted += toFormat[j];
+		}
+
+		++j;
+	}
+
+	return formatted;
 }
 // --- operators overriden ---
 
