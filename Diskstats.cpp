@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 // ----- Constructor / Destructor -----
@@ -106,10 +107,98 @@ void Diskstats::add(const Diskstats &a, const Diskstats &b)
 	}
 }
 
+int Diskstats::getValueIndex(const char formatCode) const
+//returned value index between 0 & 12 : numeric value of diskstats
+//	//	 index == 13 : device name
+//	//	 index = -1 : unknown code.
+{
+	static const char codes[] = {
+		'M', 'm', 'R', 'r', 's', 't',
+		'W', 'w', 'S', 'T', 'i', 'I', 'q'
+	};
+	static const char deviceCode = 'd';
+	
+	int index = 0;
+	while(index < 13 && codes[index] != formatCode)
+	{
+		++index;
+	}
+	
+	if(index >= 13 && formatCode != deviceCode)
+	{
+		index = -1;
+	}
+
+	return index;
+}
+
+string Diskstats::format(const string &toFormat) const
+{
+	string formatted;
+	vector<int> valueIndex;
+	
+	//Parse format String. Determine wich value goes where.
+	for(int i = 0; i < toFormat.size(); ++i)
+	{
+		if(toFormat[i] == '%' && i < toFormat.size() - 1)
+		{
+			int id = getValueIndex(toFormat[++i]);
+			if(id >= 0)
+				valueIndex.push_back(id);
+		}
+	}
+	
+	//TODO: refactor this part
+	
+	unordered_map<string, long *>::const_iterator it;
+	for(it = mapStats.cbegin(); it != mapStats.cend(); ++it)
+	{
+		string device = it->first;
+		long * values = it->second;
+		int j = 0; // position in toFormat
+		int i = 0; // position in valueIndex
+
+		while(j < toFormat.size())
+		{
+			if(toFormat[j] == '%' && j < toFormat.size() - 1)
+			{
+				int code = getValueIndex(toFormat[++j]);
+				if(code >= 0)
+				{
+					if(code < 13)
+					{
+						int val = values[valueIndex[i++]];
+						formatted += to_string(val);
+					}
+					else
+					{
+						formatted += device;
+					}
+				}
+				else
+				{
+					formatted += '%';
+					formatted += toFormat[j];
+				}
+			}
+			else
+			{
+				formatted += toFormat[j];
+			}
+
+			++j;
+		}
+		formatted += '\n';
+	}
+	return formatted;
+}
+// --- Getters & setters
+
 const string& Diskstats::getDiskstatsFile() const
 {
 	return diskstatsFile;
 }
+
 // --- private methods ---
 
 void Diskstats::readLine(const string &line)

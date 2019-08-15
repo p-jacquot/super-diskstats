@@ -46,7 +46,9 @@ class Diskstats{
 				const Diskstats & earliest);
 
 		void add( const Diskstats &a, const Diskstats &b);
-		
+		std::string format(const std::string &toFormat) const;
+					
+		// --- Getters & setters ---
 		const std::string& getDiskstatsFile() const;
 
 	private:
@@ -60,6 +62,7 @@ class Diskstats{
 					const std::string &device, 
 					const long * const& stats) 
 					const;
+		int getValueIndex(const char formatCode) const;
 };
 
 // --- Operators overriden --
