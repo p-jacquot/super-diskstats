@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include <ctime>
 
 static struct s_stats{
 	long major;
@@ -42,6 +43,7 @@ class Diskstats{
 		
 		// --- Methods ---
 		void readFile();
+		void readStat();
 		void display(std::ostream& out) const;
 		void substract(	const Diskstats &latest,
 				const Diskstats & earliest);
@@ -54,6 +56,7 @@ class Diskstats{
 
 	private:
 		std::string diskstatsFile;
+		time_t lastUpdate;
 		std::unordered_map<std::string, long *> mapStats;
 		
 		// --- private Methods ---

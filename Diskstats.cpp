@@ -4,14 +4,23 @@
 #include <iostream>
 #include <vector>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 using namespace std;
 // ----- Constructor / Destructor -----
 
 Diskstats::Diskstats(const string &file, const bool read) 
 	: diskstatsFile(file), mapStats()
 {
+	
 	if(read)
 		readFile();
+	else
+		readStat();
+	//If the file is not read, we'll still know it's last
+	//update date.
 }
 
 Diskstats::~Diskstats()
@@ -27,6 +36,7 @@ Diskstats::~Diskstats()
 
 void Diskstats::readFile()
 {
+	readStat();
 	ifstream file(diskstatsFile);
 	if(file)
 	{
@@ -42,9 +52,19 @@ void Diskstats::readFile()
 	file.close();
 }
 
+void Diskstats::readStat()
+{
+	struct stat file_stats;
+	stat(diskstatsFile.c_str(), &file_stats);
+	lastUpdate = file_stats.st_mtime;
+}
+
 void Diskstats::display(ostream& out) const
 {
 	unordered_map<string, long *>::const_iterator it;
+	
+	string update(ctime(&lastUpdate));
+	out << "File : " << diskstatsFile << " read on " << update;
 	for(it = mapStats.cbegin(); it != mapStats.cend(); ++it)
 	{
 		writeDeviceInfo(out, it->first, it->second);
