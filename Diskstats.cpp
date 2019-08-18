@@ -202,7 +202,17 @@ void Diskstats::readLine(const string &line)
 		// It will be kept like it is.
 	}	
 	
-	mapStats.insert(make_pair(words[2], values));
+	if(mapStats.find(words[2]) == mapStats.end())
+	{
+		mapStats.insert(make_pair(words[2], values));
+	}
+	else
+	{
+		unordered_map<string, long *>::iterator it;
+		it = mapStats.find(words[2]);
+		delete [] it->second;
+		it->second = values;
+	}
 }
 
 
