@@ -19,7 +19,7 @@ Diskstats::Diskstats(const string &file, const bool read)
 		readFile();
 	else
 		readStat();
-	//If the file is not read, we'll still know it's last
+	//If the file is not read, we'll still know its last
 	//update date.
 }
 
@@ -138,7 +138,7 @@ string Diskstats::format(const string &toFormat) const
 		if(toFormat[i] == '%' && i < toFormat.size() - 1)
 		{
 			int id = getValueIndex(toFormat[++i]);
-			if(id >= 0)
+			if(id >= 0 && id < 13)
 				valueIndex.push_back(id);
 		}
 	}
@@ -292,7 +292,7 @@ const
 			{
 				if(code < 13)
 				{
-					int val = values[valueIndex[i++]];
+					long val = values[valueIndex[i++]];
 					formatted += to_string(val);
 				}
 				else
@@ -313,7 +313,6 @@ const
 
 		++j;
 	}
-
 	return formatted;
 }
 // --- operators overriden ---
